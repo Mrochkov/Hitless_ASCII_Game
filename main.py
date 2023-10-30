@@ -55,6 +55,8 @@ def show_settings(stdscr, settings):
         stdscr.addstr(start_y + 3 + len(options) * 2, start_x + 2, "Press Enter to return")
         key = stdscr.getch()
 
+
+        #Settings option selection
         if key == curses.KEY_UP and selected_option > 0:
             selected_option -= 1
         elif key == curses.KEY_DOWN and selected_option < len(options) - 1:
