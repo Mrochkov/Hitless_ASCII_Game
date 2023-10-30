@@ -55,15 +55,12 @@ def show_settings(stdscr, settings):
         stdscr.addstr(start_y + 3 + len(options) * 2, start_x + 2, "Press Enter to return")
         key = stdscr.getch()
 
-
-        #Settings option selection
+        # Settings option selection
         if key == curses.KEY_UP and selected_option > 0:
             selected_option -= 1
         elif key == curses.KEY_DOWN and selected_option < len(options) - 1:
             selected_option += 1
-        elif key == 10:
-            return
-        elif key == ord('='):
+        elif key == curses.KEY_RIGHT:  # Replacing 'e' with right arrow
             if selected_option == 0:
                 current_speed = options[selected_option][1]
                 next_speed_index = (list(game_speeds.keys()).index(current_speed) + 1) % len(game_speeds)
@@ -73,7 +70,7 @@ def show_settings(stdscr, settings):
                 next_difficulty_index = (list(difficulty_levels.keys()).index(current_difficulty) + 1) % len(
                     difficulty_levels)
                 RAND_ENEMY = difficulty_levels[list(difficulty_levels.keys())[next_difficulty_index]]
-        elif key == ord('-'):
+        elif key == curses.KEY_LEFT:  # Replacing 'q' with left arrow
             if selected_option == 0:
                 current_speed = options[selected_option][1]
                 prev_speed_index = (list(game_speeds.keys()).index(current_speed) - 1) % len(game_speeds)
@@ -83,8 +80,10 @@ def show_settings(stdscr, settings):
                 prev_difficulty_index = (list(difficulty_levels.keys()).index(current_difficulty) - 1) % len(
                     difficulty_levels)
                 RAND_ENEMY = difficulty_levels[list(difficulty_levels.keys())[prev_difficulty_index]]
+        elif key == 10:
+            return
 
-            # Update the displayed option values
+        # Update the displayed option values
         options[0] = ("Game Speed", list(game_speeds.keys())[list(game_speeds.values()).index(ENEMY_SPEED)])
         options[1] = ("Difficulty", list(difficulty_levels.keys())[list(difficulty_levels.values()).index(RAND_ENEMY)])
 
@@ -99,7 +98,8 @@ def show_information(stdscr):
 
         information_text = "Game is all about dodging incoming bullets, the longer you survive the more points you get." \
                            "\n You have only one life." \
-                           " \n\n\n How to play: \n Press 'a' to move left \n Press 'd' to move right"
+                           " \n\n\n How to play: \n\n Press '<-' to move left \n Press '->' to move right " \
+                           "\n\n\n Press enter to return to the main menu"
 
 
         #Info box
@@ -110,7 +110,7 @@ def show_information(stdscr):
         start_x = (sw - info_width) // 2
 
         border_width = info_width + 4
-        border_height = info_height + 4
+        border_height = info_height
 
         border = '+' + '-' * (border_width - 2) + '+'
         stdscr.addstr(start_y - 2, start_x - 2, '+' + '-' * (border_width) + '+')
@@ -136,12 +136,12 @@ def show_welcome_screen(stdscr):
     sh, sw = stdscr.getmaxyx()
 
     logo = [
-        "  _    _  _  ______  _       ______   _____  _____  ",
-        " | |  | || ||__  __|| |     |  ____| / ____|/ ____| ",
-        " | |__| || |  | |   | |     | |__   | (___ | (____  ",
-        " |  __  || |  | |   | |     |  __|   \___ \ \____ \ ",
-        " | |  | || |  | |   | |____ | |____  ____) | ____) |",
-        " |_|  |_||_|  |_|   |______||______||_____/ |_____/ "
+        "  _    _  _  ______  _       ______   _____   _____  ",
+        " | |  | || ||__  __|| |     |  ____| / ____| / ____| ",
+        " | |__| || |  | |   | |     | |__   | (___  | (____  ",
+        " |  __  || |  | |   | |     |  __|   \___ \  \____ \ ",
+        " | |  | || |  | |   | |____ | |____  ____) |  ____) |",
+        " |_|  |_||_|  |_|   |______||______||_____/  |_____/ "
     ]
 
     #Menu
@@ -196,9 +196,33 @@ def show_welcome_screen(stdscr):
 
 def ask_for_name(stdscr):
     stdscr.clear()
-    stdscr.addstr(5, 10, "Enter your name: ")
+
+    game_over_text = [
+        " _____                         ____                 ",
+        "|  __ \                       / __ \                ",
+        "| |  \/ __ _ _ __ ___   ___  | |  | |_   _____ _ __ ",
+        "| | __ / _` | '_ ` _ \ / _ \ | |  | \ \ / / _ \ '__|",
+        "| |_\ \ (_| | | | | | |  __/ | |__| |\ V /  __/ |   ",
+        " \____/\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   ",
+    ]
+    sh, sw = stdscr.getmaxyx()
+    w = len(game_over_text[0]) + 4
+    h = len(game_over_text) + 4
+    y = (sh - h) // 2
+    x = (sw - w) // 2
+
+    stdscr.addstr(y - 1, x, '+' + '-' * w + '+')
+    for i in range(y, y + h):
+        stdscr.addstr(i, x, '|')
+        stdscr.addstr(i, x + w + 1, '|')
+    stdscr.addstr(y + h, x, '+' + '-' * w + '+')
+
+    for idx, line in enumerate(game_over_text, start=1):
+        stdscr.addstr(y + idx, x + 2, line)
+
+    stdscr.addstr(19, 36, "Enter your name: ")
     curses.echo()
-    name = stdscr.getstr(6, 10, 20).decode("utf-8")
+    name = stdscr.getstr(19, 53, 20).decode("utf-8")
     curses.noecho()
     return name
 
@@ -250,7 +274,7 @@ def show_leaderboard(stdscr, settings):
 
         # Instructions
         instruction_index = 4 + len(LEADERBOARD)
-        stdscr.addstr(instruction_index, 10, "Press any key to return to the main menu.")
+        stdscr.addstr(instruction_index, 10, "Press enter key to return to the main menu.")
 
         # Border sides for instruction
         stdscr.addstr(instruction_index, 9, "|")
@@ -306,9 +330,9 @@ def main_game(stdscr):
 
         #Move player
         action = stdscr.getch()
-        if action == ord('a') and player_x > 2:
+        if action == curses.KEY_LEFT and player_x > 2:
             player_x -= 1
-        elif action == ord('d') and player_x < sw - 5:
+        elif action == curses.KEY_RIGHT and player_x < sw - 5:
             player_x += 1
 
         #Move enemies
