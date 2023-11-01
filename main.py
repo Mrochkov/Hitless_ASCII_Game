@@ -4,13 +4,13 @@ import time
 
 #GLOBAL SETTINGS
 PLAYER_SPEED = 5
-ENEMY_SPEED = 0.2
+ENEMY_SPEED = 0.15
 NUM_ENEMIES = 5
 RAND_ENEMY = 5
 LEADERBOARD = []
 GAME_OVER = False
 
-game_speeds = {"slow": 0.2, "normal": 0.1, "fast": 0.05}
+game_speeds = {"slow": 0.15, "normal": 0.1, "fast": 0.05}
 difficulty_levels = {"easy": 5, "normal": 10, "hard": 20}
 
 
@@ -24,8 +24,9 @@ def show_settings(stdscr, settings):
 
     #Settings box
     max_width = max([len(f"{text}: {value}") for text, value in options])
-    box_width = max_width + 6
-    box_height = len(options) * 2 + 3
+    max_width = max(max_width, len("Use '-' or '+' to manipulate settings"))
+    box_width = max_width + 10
+    box_height = len(options) * 2 + 5
 
     height, width = stdscr.getmaxyx()
 
@@ -43,24 +44,25 @@ def show_settings(stdscr, settings):
             else:
                 stdscr.addstr(start_y + y, start_x, "|" + " " * (box_width - 2) + "|")
 
-        stdscr.addstr(start_y, start_x + 2, "Settings: ")
-        stdscr.addstr(start_y + 1, start_x + 2, "Use '-' or '+' to manipulate settings")
+        stdscr.addstr(start_y + 1, start_x + 4, "Settings: ", curses.A_BOLD)
+        stdscr.addstr(start_y + 3, start_x + 4, "Use arrows '<-''->' to manipulate settings")
 
         for index, (text, value) in enumerate(options):
             if index == selected_option:
-                stdscr.addstr(start_y + 3 + index * 2, start_x + 2, f"> {text}: {value}", curses.A_STANDOUT)
+                stdscr.addstr(start_y + 5 + index * 2, start_x + 4, f"> {text}: {value}", curses.A_STANDOUT)
             else:
-                stdscr.addstr(start_y + 3 + index * 2, start_x + 2, f"  {text}: {value}")
+                stdscr.addstr(start_y + 5 + index * 2, start_x + 4, f"  {text}: {value}")
 
-        stdscr.addstr(start_y + 3 + len(options) * 2, start_x + 2, "Press Enter to return")
+        stdscr.addstr(start_y + 5 + len(options) * 2, start_x + 4, "Press Enter to return")
         key = stdscr.getch()
+
 
         # Settings option selection
         if key == curses.KEY_UP and selected_option > 0:
             selected_option -= 1
         elif key == curses.KEY_DOWN and selected_option < len(options) - 1:
             selected_option += 1
-        elif key == curses.KEY_RIGHT:  # Replacing 'e' with right arrow
+        elif key == curses.KEY_RIGHT:
             if selected_option == 0:
                 current_speed = options[selected_option][1]
                 next_speed_index = (list(game_speeds.keys()).index(current_speed) + 1) % len(game_speeds)
@@ -70,7 +72,7 @@ def show_settings(stdscr, settings):
                 next_difficulty_index = (list(difficulty_levels.keys()).index(current_difficulty) + 1) % len(
                     difficulty_levels)
                 RAND_ENEMY = difficulty_levels[list(difficulty_levels.keys())[next_difficulty_index]]
-        elif key == curses.KEY_LEFT:  # Replacing 'q' with left arrow
+        elif key == curses.KEY_LEFT:
             if selected_option == 0:
                 current_speed = options[selected_option][1]
                 prev_speed_index = (list(game_speeds.keys()).index(current_speed) - 1) % len(game_speeds)
@@ -83,7 +85,6 @@ def show_settings(stdscr, settings):
         elif key == 10:
             return
 
-        # Update the displayed option values
         options[0] = ("Game Speed", list(game_speeds.keys())[list(game_speeds.values()).index(ENEMY_SPEED)])
         options[1] = ("Difficulty", list(difficulty_levels.keys())[list(difficulty_levels.values()).index(RAND_ENEMY)])
 
@@ -194,7 +195,7 @@ def show_welcome_screen(stdscr):
         elif key == 10:
             return selected_option
 
-def ask_for_name(stdscr):
+def ask_for_name(stdscr, score):
     stdscr.clear()
 
     game_over_text = [
@@ -214,13 +215,13 @@ def ask_for_name(stdscr):
     stdscr.addstr(y - 1, x, '+' + '-' * w + '+')
     for i in range(y, y + h):
         stdscr.addstr(i, x, '|')
-        stdscr.addstr(i, x + w + 1, '|')
+        stdscr.addstr(i, x + w + 2, '|')
     stdscr.addstr(y + h, x, '+' + '-' * w + '+')
 
     for idx, line in enumerate(game_over_text, start=1):
         stdscr.addstr(y + idx, x + 2, line)
 
-    stdscr.addstr(19, 36, "Enter your name: ")
+    stdscr.addstr(19, 35, "Enter your name: ")
     curses.echo()
     name = stdscr.getstr(19, 53, 20).decode("utf-8")
     curses.noecho()
@@ -229,65 +230,73 @@ def ask_for_name(stdscr):
 def game_over_screen(stdscr, score):
     global GAME_OVER, ENEMY_SPEED
     GAME_OVER = True
-    player_name = ask_for_name(stdscr)
+    player_name = ask_for_name(stdscr, score)
 
-    # Get current game settings
+    #current game settings
     game_speed = list(game_speeds.keys())[list(game_speeds.values()).index(ENEMY_SPEED)]
     difficulty_level = list(difficulty_levels.keys())[list(difficulty_levels.values()).index(RAND_ENEMY)]
 
     LEADERBOARD.append((player_name, score, game_speed, difficulty_level))
-    LEADERBOARD.sort(key=lambda x: x[1], reverse=True)  # Sort by score descending
+    LEADERBOARD.sort(key=lambda x: x[1], reverse=True)
     stdscr.getch()
 
 
 def show_leaderboard(stdscr, settings):
     while True:
         stdscr.clear()
+        h, w = stdscr.getmaxyx()
 
-        # Assuming max width starts from a default value
-        max_width = 40  # This can be adjusted
 
-        # Calculate max width based on leaderboard content, if needed
+        max_width = 40
+
+        #Content border calculation
         for _, (name, score, game_speed, difficulty_level) in enumerate(LEADERBOARD):
             line_content_length = len(f"{name} - {score} (Speed: {game_speed}, Difficulty: {difficulty_level})")
             max_width = max(line_content_length + 20, max_width)  # Adjust as needed
 
         border_top_bottom = "+" + "=" * (max_width - 2) + "+"
+        start_x = (w - max_width) // 2
+        start_y = (h - len(LEADERBOARD) - 5) // 2
 
-        # Border Top
-        stdscr.addstr(0, 9, border_top_bottom)
+        #Border Top
+        stdscr.addstr(start_y, start_x, border_top_bottom)
 
-        # Title
-        stdscr.addstr(1, 10, "Leaderboard")
-        stdscr.addstr(2, 10, "===========")
+        stdscr.addstr(start_y + 1, start_x, "|")
+        stdscr.addstr(start_y + 1, start_x + 1, "Leaderboard".center(max_width - 2), curses.A_BOLD)
+        stdscr.addstr(start_y + 1, start_x + max_width - 1, "|")
+        stdscr.addstr(start_y + 2, start_x, "|")
+        stdscr.addstr(start_y + 2, start_x + 1, "===========".center(max_width - 2), curses.A_BOLD)
+        stdscr.addstr(start_y + 2, start_x + max_width - 1, "|")
 
-        # Entries
+        #Entries with borders
         for index, (name, score, game_speed, difficulty_level) in enumerate(LEADERBOARD, start=1):
-            line_content = f"{index}. {name} - {score} (Speed: {game_speed}, Difficulty: {difficulty_level})"
+            line_content = f"{index}. {name} - Score: {score} (Speed: {game_speed}, Difficulty: {difficulty_level})"
+            y_position = start_y + 2 + index
+            stdscr.addstr(y_position, start_x, "|")
+            stdscr.addstr(y_position, start_x + 1, line_content.ljust(max_width - 2))
+            stdscr.addstr(y_position, start_x + max_width - 1, "|")
 
-            # Add content
-            stdscr.addstr(2 + index, 10, line_content)
+        #Instructions inside the border
+        instruction_index = start_y + 4 + len(LEADERBOARD)
+        stdscr.addstr(instruction_index, start_x, "|")
+        stdscr.addstr(instruction_index, start_x + 1, "Press enter key to return to the menu.".ljust(max_width - 2))
+        stdscr.addstr(instruction_index, start_x + max_width - 1, "|")
 
-            # Border sides for each line
-            stdscr.addstr(2 + index, 9, "|")
-            stdscr.addstr(2 + index, 9 + max_width - 1, "|")
-
-        # Instructions
-        instruction_index = 4 + len(LEADERBOARD)
-        stdscr.addstr(instruction_index, 10, "Press enter key to return to the main menu.")
-
-        # Border sides for instruction
-        stdscr.addstr(instruction_index, 9, "|")
-        stdscr.addstr(instruction_index, 9 + max_width - 1, "|")
+        #side borders for leaderboard
+        for i in range(start_y + 3 + len(LEADERBOARD), instruction_index):
+            stdscr.addstr(i, start_x, "|")
+            stdscr.addstr(i, start_x + max_width - 1, "|")
 
         # Border Bottom
-        stdscr.addstr(instruction_index + 1, 9, border_top_bottom)
+        stdscr.addstr(instruction_index + 1, start_x, border_top_bottom)
 
         stdscr.refresh()
         key = stdscr.getch()
 
         if key == 10:
             return
+
+
 
 
 def main_game(stdscr):
