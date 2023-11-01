@@ -303,10 +303,17 @@ def main_game(stdscr):
     global GAME_OVER
     GAME_OVER = False
     curses.curs_set(0)
-    sh, sw = 20, 40
     stdscr.clear()
     stdscr.timeout(0)
     stdscr.refresh()
+
+    # Arena dimensions
+    sh, sw = 20, 40
+
+    # Calculate screen center
+    screen_h, screen_w = stdscr.getmaxyx()
+    start_y = (screen_h - sh) // 2
+    start_x = (screen_w - sw) // 2
 
     #Player_create
     player = "<O>"
@@ -331,7 +338,7 @@ def main_game(stdscr):
     score = 0
 
     while not GAME_OVER:
-        win = stdscr.subwin(sh, sw, 0, 0)
+        win = stdscr.subwin(sh, sw, start_y, start_x)
         win.clear()
 
         for i, line in enumerate(ascii_art):
@@ -353,7 +360,7 @@ def main_game(stdscr):
             if enemy_y == sh - 2:
                 if enemy_x >= player_x and enemy_x <= player_x:
                     GAME_OVER = True
-                    return game_over_screen(stdscr)
+                    return game_over_screen(stdscr, score)
             else:
                 new_enemies.append((enemy_x, enemy_y, enemy))
 
