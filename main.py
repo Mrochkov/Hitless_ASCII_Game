@@ -203,7 +203,6 @@ def show_welcome_screen(stdscr):
         border_width = max(logo_width, menu_width) + 4
         border_height = logo_height + menu_height + 3
 
-        border = '+' + '-' * (border_width - 2) + '+'
         stdscr.addstr(start_y - 2, start_x - 3, '+' + '-' * (border_width) + '+')
         stdscr.addstr(start_y + border_height, start_x - 3, '+' + '-' * (border_width) + '+')
         for i in range(start_y - 1, start_y + border_height):
@@ -438,14 +437,14 @@ def main_game(stdscr):
             GAME_OVER = True
 
         # Draw player
-        win.attron(curses.color_pair(2))
+        win.attron(curses.color_pair(1))
         win.addstr(player_y, player_x, player)
-        win.attroff(curses.color_pair(2))
+        win.attroff(curses.color_pair(1))
 
         for enemy_x, enemy_y, enemy in enemies:
-            win.attron(curses.color_pair(1))
+            win.attron(curses.color_pair(2))
             win.addch(enemy_y, enemy_x, enemy)
-            win.attroff(curses.color_pair(1))
+            win.attroff(curses.color_pair(2))
             if enemy_y == player_y:
                 score = increase_score(score)
 
@@ -469,30 +468,25 @@ def main(stdscr, settings=game_speeds):
 
         if choice == 0:
             stdscr.clear()
-            stdscr.addstr(0, 0, "Starting the game...")
             stdscr.refresh()
             main_game(stdscr)
 
         elif choice == 1:
             stdscr.clear()
-            stdscr.addstr(0, 0, "Information:")
             show_information(stdscr)
             stdscr.refresh()
 
         elif choice == 2:
             stdscr.clear()
-            stdscr.addstr(0, 0, "Settings:")
             show_settings(stdscr, settings)
             stdscr.refresh()
 
         elif choice == 3:
             stdscr.clear()
-            stdscr.addstr(0, 0, "Leaderboard")
             show_leaderboard(stdscr, settings)
             stdscr.refresh()
 
         elif choice == 4:
-            stdscr.addstr(0, 0, "Goodbye!")
             stdscr.refresh()
             break
 
