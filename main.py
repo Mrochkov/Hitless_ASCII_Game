@@ -10,6 +10,7 @@ RAND_ENEMY = 5
 LEADERBOARD = []
 GAME_OVER = False
 
+
 game_speeds = {"slow": 0.15, "normal": 0.1, "fast": 0.05}
 difficulty_levels = {"easy": 5, "normal": 10, "hard": 20}
 score_multipliers = {"easy": 1, "normal": 2, "hard": 5}
@@ -18,6 +19,19 @@ score_multipliers = {"easy": 1, "normal": 2, "hard": 5}
 def increase_score(current_score):
     difficulty = list(difficulty_levels.keys())[list(difficulty_levels.values()).index(RAND_ENEMY)]
     return current_score + score_multipliers[difficulty]
+
+def draw_border(stdscr, start_x, start_y, width, height, border_type=0):
+    # Define color pairs if needed, for different border styles
+    # curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)  # Example color pair
+
+    # Draw the top and bottom borders
+    stdscr.addstr(start_y, start_x, "+" + "-" * (width) + "+")
+    stdscr.addstr(start_y + height + 1, start_x, "+" + "-" * (width) + "+")
+
+    # Draw the left and right borders
+    for y in range(start_y + 1, start_y + height + 1):
+        stdscr.addstr(y, start_x, "|")
+        stdscr.addstr(y, start_x + width + 1, "|")
 
 
 def show_settings(stdscr, settings):
@@ -48,11 +62,8 @@ def show_settings(stdscr, settings):
         stdscr.clear()
 
         #Border
-        for y in range(box_height + 3):
-            if y == 0 or y == box_height + 2:
-                stdscr.addstr(start_y + y, start_x, "+" + "-" * (box_width - 2) + "+")
-            else:
-                stdscr.addstr(start_y + y, start_x, "|" + " " * (box_width - 2) + "|")
+        draw_border(stdscr, start_x, start_y, box_width, box_height + 3)
+
 
         stdscr.addstr(start_y + 1, start_x + 4, "Settings: ", curses.color_pair(1))
         stdscr.addstr(start_y + 3, start_x + 4, "Use arrows '<-''->' to manipulate settings")
@@ -132,12 +143,7 @@ def show_information(stdscr):
         border_width = info_width + 4
         border_height = info_height
 
-        stdscr.addstr(start_y - 2, start_x - 2, '+' + '-' * (border_width) + '+')
-        stdscr.addstr(start_y + border_height + 1, start_x - 2, '+' + '-' * (border_width) + '+')
-
-        for i in range(start_y - 1, start_y + border_height + 1):
-            stdscr.addch(i, start_x - 2, '|')
-            stdscr.addch(i, start_x + border_width - 1, '|')
+        draw_border(stdscr, start_x - 2, start_y - 2, border_width, border_height + 2)
 
         for i, line in enumerate(information_text.split('\n')):
             stdscr.addstr(start_y + i, start_x, line.center(info_width + 2))
@@ -203,11 +209,7 @@ def show_welcome_screen(stdscr):
         border_width = max(logo_width, menu_width) + 4
         border_height = logo_height + menu_height + 3
 
-        stdscr.addstr(start_y - 2, start_x - 3, '+' + '-' * (border_width) + '+')
-        stdscr.addstr(start_y + border_height, start_x - 3, '+' + '-' * (border_width) + '+')
-        for i in range(start_y - 1, start_y + border_height):
-            stdscr.addch(i, start_x - 3, '|')
-            stdscr.addch(i, start_x + border_width - 2, '|')
+        draw_border(stdscr, start_x - 3, start_y - 2, border_width, border_height + 1)
 
         # Calculate centering for menu items
         menu_start_x = start_x + (border_width // 2)
@@ -252,11 +254,8 @@ def ask_for_name(stdscr, score):
     y = (sh - h) // 2
     x = (sw - w) // 2
 
-    stdscr.addstr(y - 1, x, '+' + '-' * w + '+')
-    for i in range(y, y + h):
-        stdscr.addstr(i, x, '|')
-        stdscr.addstr(i, x + w + 2, '|')
-    stdscr.addstr(y + h, x, '+' + '-' * w + '+')
+    draw_border(stdscr, x, y - 1, w, h)
+
 
     for idx, line in enumerate(game_over_text, start=1):
         stdscr.addstr(y + idx, x + 2, line)
@@ -309,41 +308,25 @@ def show_leaderboard(stdscr, settings):
             line_content_length = len(f"{name} - {score} (Speed: {game_speed}, Difficulty: {difficulty_level})")
             max_width = max(line_content_length + 20, max_width)  # Adjust as needed
 
-        border_top_bottom = "+" + "-" * (max_width - 2) + "+"
         start_x = (w - max_width) // 2
         start_y = (h - len(LEADERBOARD) - 5) // 2
 
-        #Border Top
-        stdscr.addstr(start_y, start_x, border_top_bottom)
+        draw_border(stdscr, start_x, start_y, max_width, len(LEADERBOARD) + 5)
 
-        stdscr.addstr(start_y + 1, start_x, "|")
+        #Border Top
+
         stdscr.addstr(start_y + 1, start_x + 1, "Leaderboard".center(max_width - 2), curses.color_pair(1))
-        stdscr.addstr(start_y + 1, start_x + max_width - 1, "|")
-        stdscr.addstr(start_y + 2, start_x, "|")
         stdscr.addstr(start_y + 2, start_x + 1, "===========".center(max_width - 2), curses.color_pair(1))
-        stdscr.addstr(start_y + 2, start_x + max_width - 1, "|")
 
         #Entries with borders
         for index, (name, score, game_speed, difficulty_level) in enumerate(LEADERBOARD, start=1):
             line_content = f"{index}. {name} - Score: {score} (Speed: {game_speed}, Difficulty: {difficulty_level})"
             y_position = start_y + 2 + index
-            stdscr.addstr(y_position, start_x, "|")
             stdscr.addstr(y_position, start_x + 1, line_content.ljust(max_width - 2))
-            stdscr.addstr(y_position, start_x + max_width - 1, "|")
 
         #Instructions inside the border
         instruction_index = start_y + 4 + len(LEADERBOARD)
-        stdscr.addstr(instruction_index, start_x, "|")
         stdscr.addstr(instruction_index, start_x + 1, "Press enter key to return to the menu".ljust(max_width - 2), curses.color_pair(2))
-        stdscr.addstr(instruction_index, start_x + max_width - 1, "|")
-
-        #side borders for leaderboard
-        for i in range(start_y + 3 + len(LEADERBOARD), instruction_index):
-            stdscr.addstr(i, start_x, "|")
-            stdscr.addstr(i, start_x + max_width - 1, "|")
-
-        # Border Bottom
-        stdscr.addstr(instruction_index + 1, start_x, border_top_bottom)
 
         stdscr.refresh()
         key = stdscr.getch()
