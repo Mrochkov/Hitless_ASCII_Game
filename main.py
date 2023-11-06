@@ -294,7 +294,6 @@ def show_welcome_screen(stdscr):
         draw_border(stdscr, start_x - 3, start_y - 2, border_width, border_height + 1)
 
         # Calculate centering for menu items
-        menu_start_x = start_x + (border_width // 2)
         for i, item in enumerate(menu_items):
             item_width = len(item)
             menu_start_x = start_x + (border_width - item_width - 3) // 2
@@ -352,8 +351,8 @@ def ask_for_name(stdscr, score):
     name = ""
     #Asks for name untill its not empty
     while not name.strip():
-        stdscr.addstr(21, 35, "Enter your name: ", curses.color_pair(2))
-        name = stdscr.getstr(21, 53, 20).decode("utf-8")
+        stdscr.addstr(19, 35, "Enter your name: ", curses.color_pair(2))
+        name = stdscr.getstr(19, 53, 20).decode("utf-8")
         if not name.strip():
             stdscr.addstr(25, 35, "Name cannot be empty! Please enter again.")
     curses.noecho()
