@@ -1,6 +1,8 @@
 import curses
 import random
 import time
+import json
+import os
 
 #GLOBAL SETTINGS
 PLAYER_SPEED = 5
@@ -35,6 +37,31 @@ CURRENT_COLOR = "yellow"
 game_speeds = {"slow": 0.15, "normal": 0.1, "fast": 0.05}
 difficulty_levels = {"easy": 5, "normal": 10, "hard": 20}
 score_multipliers = {"easy": 1, "normal": 2, "hard": 5}
+
+
+# Define a path for the settings file
+SETTINGS_FILE_PATH = "game_settings.json"
+
+def save_settings():
+    global ENEMY_SPEED, RAND_ENEMY, CURRENT_COLOR, LEADERBOARD
+    settings = {
+        "ENEMY_SPEED": ENEMY_SPEED,
+        "RAND_ENEMY": RAND_ENEMY,
+        "CURRENT_COLOR": CURRENT_COLOR,
+        "LEADERBOARD": LEADERBOARD
+    }
+    with open(SETTINGS_FILE_PATH, 'w') as f:
+        json.dump(settings, f)
+
+def load_settings():
+    global ENEMY_SPEED, RAND_ENEMY, CURRENT_COLOR, LEADERBOARD
+    if os.path.exists(SETTINGS_FILE_PATH):
+        with open(SETTINGS_FILE_PATH, 'r') as f:
+            settings = json.load(f)
+            ENEMY_SPEED = settings.get("ENEMY_SPEED", 0.15)
+            RAND_ENEMY = settings.get("RAND_ENEMY", 5)
+            CURRENT_COLOR = settings.get("CURRENT_COLOR", "yellow")
+            LEADERBOARD = settings.get("LEADERBOARD", [])
 
 def init_colors():
     if curses.can_change_color():
@@ -500,10 +527,11 @@ def main(stdscr, settings=game_speeds):
     sh, sw = 20, 40
     stdscr.clear()
     stdscr.refresh()
-
+    load_settings()
 
     while True:
         choice = show_welcome_screen(stdscr)
+
 
 
         if choice == 0:
@@ -531,6 +559,7 @@ def main(stdscr, settings=game_speeds):
             stdscr.refresh()
 
         elif choice == 4:
+            save_settings()
             stdscr.refresh()
             break
 
