@@ -144,6 +144,7 @@ def show_settings(stdscr, settings):
             selected_option += 1
         elif key == curses.KEY_RIGHT or key == curses.KEY_LEFT:
             if selected_option == 0:
+
                 # Change game speed
                 current_speed_index = list(game_speeds.keys()).index(options[selected_option][1])
                 next_speed_index = (current_speed_index + 1) % len(game_speeds) if key == curses.KEY_RIGHT else (current_speed_index - 1) % len(game_speeds)
@@ -262,11 +263,11 @@ def show_welcome_screen(stdscr):
     start_x = (sw - max(logo_width, menu_width)) // 2
 
     hint_msg = "Use Arrow Up and Down to move"
-    hint_width = sw // 2  # Make the subwin half the width of the screen
+    hint_width = sw // 2
     hint_height = 4
 
-    hint_start_y = sh - hint_height  # Position the subwin just above the bottom
-    hint_start_x = (sw - hint_width) // 2  # Center the subwin horizontally
+    hint_start_y = sh - hint_height
+    hint_start_x = (sw - hint_width) // 2
     hint_subwin = stdscr.subwin(hint_height, hint_width, hint_start_y, hint_start_x)
 
     hint_subwin.addstr(1, (hint_width - len(hint_msg)) // 2, hint_msg)
@@ -277,14 +278,14 @@ def show_welcome_screen(stdscr):
     while True:
         stdscr.clear()
 
-        hint_subwin.clear()  # Clear the subwin
+        hint_subwin.clear()
         hint_subwin.box()
         hint_subwin.addstr(0, 2, "Hint")
         hint_subwin.addstr(1, 2, "Use Arrow Up '^' and Down 'v' to move in the menu")
         hint_subwin.addstr(2, 2, "Press 'Enter' to choose an option")
 
         hint_subwin.refresh()
-        #Show logo
+
         for i, line in enumerate(logo):
             stdscr.addstr(start_y + i, start_x, line)
 
@@ -561,6 +562,9 @@ def main(stdscr, settings=game_speeds):
             save_settings()
             stdscr.refresh()
             break
+
+
+
 
 
 
