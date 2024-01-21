@@ -486,7 +486,7 @@ def main_game(stdscr):
             else:
                 new_enemies.append((enemy_x, enemy_y, enemy))
 
-        #Spawn enemies
+
         if random.randint(1, RAND_ENEMY) > 4:
             new_enemy = 'v'
             new_enemy_x = random.randint(2, sw - 3)
