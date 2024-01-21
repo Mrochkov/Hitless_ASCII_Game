@@ -39,7 +39,6 @@ difficulty_levels = {"easy": 5, "normal": 10, "hard": 20}
 score_multipliers = {"easy": 1, "normal": 2, "hard": 5}
 
 
-# Define a path for the settings file
 SETTINGS_FILE_PATH = "game_settings.json"
 
 def save_settings():
@@ -67,7 +66,6 @@ def init_colors():
     if curses.can_change_color():
         for name, color in COLOR_CONSTANTS.items():
             curses.init_pair(COLOR_PAIRS[name], color, curses.COLOR_BLACK)
-    else:
         pass
 
 
@@ -80,11 +78,9 @@ def draw_border(stdscr, start_x, start_y, width, height):
     color_pair = COLOR_PAIRS[CURRENT_COLOR]
     stdscr.attron(curses.color_pair(color_pair))
 
-    # Draw the top and bottom borders
     stdscr.addstr(start_y, start_x, "+" + "-" * (width) + "+")
     stdscr.addstr(start_y + height + 1, start_x, "+" + "-" * (width) + "+")
 
-    # Draw the left and right borders
     for y in range(start_y + 1, start_y + height + 1):
         stdscr.addstr(y, start_x, "|")
         stdscr.addstr(y, start_x + width + 1, "|")
@@ -103,16 +99,13 @@ def show_settings(stdscr, settings):
         ("Border Color", CURRENT_COLOR)
     ]
 
-    # Calculate settings box dimensions
     max_width = max([len(f"{text}: {value}") for text, value in options])
     max_width = max(max_width, len("Use arrows '<-' and '->' to manipulate settings"))
     box_width = max_width + 10
     box_height = len(options) * 2 + 5
 
-    # Get window's height and width
     height, width = stdscr.getmaxyx()
 
-    # Calculate the starting position of the settings box
     start_y = (height - box_height) // 2
     start_x = (width - box_width) // 2
 
@@ -121,13 +114,11 @@ def show_settings(stdscr, settings):
     while True:
         stdscr.clear()
 
-        # Draw the border with the selected color
         draw_border(stdscr, start_x, start_y, box_width, box_height + 1)
 
         stdscr.addstr(start_y + 1, start_x + 2, "Settings: ", curses.color_pair(1))
         stdscr.addstr(start_y + 3, start_x + 2, "Use arrows '<-' and '->' to manipulate settings")
 
-        # Display the options
         for index, (text, value) in enumerate(options):
             if index == selected_option:
                 stdscr.addstr(start_y + 5 + index * 2, start_x + 2, f"> {text}: {value}", curses.A_STANDOUT)
@@ -137,26 +128,22 @@ def show_settings(stdscr, settings):
         stdscr.addstr(start_y + 6 + len(options) * 2, start_x + 2, "Press Enter to return to the main menu", curses.color_pair(2))
         key = stdscr.getch()
 
-        # Handle user input for option selection
         if key == curses.KEY_UP and selected_option > 0:
             selected_option -= 1
         elif key == curses.KEY_DOWN and selected_option < len(options) - 1:
             selected_option += 1
         elif key == curses.KEY_RIGHT or key == curses.KEY_LEFT:
             if selected_option == 0:
-                # Change game speed
                 current_speed_index = list(game_speeds.keys()).index(options[selected_option][1])
                 next_speed_index = (current_speed_index + 1) % len(game_speeds) if key == curses.KEY_RIGHT else (current_speed_index - 1) % len(game_speeds)
                 ENEMY_SPEED = game_speeds[list(game_speeds.keys())[next_speed_index]]
                 options[selected_option] = ("Game Speed", list(game_speeds.keys())[next_speed_index])
             elif selected_option == 1:
-                # Change difficulty
                 current_difficulty_index = list(difficulty_levels.keys()).index(options[selected_option][1])
                 next_difficulty_index = (current_difficulty_index + 1) % len(difficulty_levels) if key == curses.KEY_RIGHT else (current_difficulty_index - 1) % len(difficulty_levels)
                 RAND_ENEMY = difficulty_levels[list(difficulty_levels.keys())[next_difficulty_index]]
                 options[selected_option] = ("Difficulty", list(difficulty_levels.keys())[next_difficulty_index])
             elif selected_option == 2:
-                # Change border color
                 color_names = list(COLOR_CONSTANTS.keys())
                 current_color_index = color_names.index(CURRENT_COLOR)
                 new_color_index = (current_color_index + (1 if key == curses.KEY_RIGHT else -1)) % len(color_names)
@@ -212,7 +199,6 @@ def show_information(stdscr):
         for i, line in enumerate(information_text.split('\n')):
             stdscr.addstr(start_y + i, start_x, line.center(info_width + 2))
 
-        #Add color to items from list
         yellow_lines = ["How to play:", "Score multipliers depending on the game difficulty:"]
         for i, line in enumerate(information_text.split('\n')):
             if line.strip() in yellow_lines:
@@ -262,11 +248,11 @@ def show_welcome_screen(stdscr):
     start_x = (sw - max(logo_width, menu_width)) // 2
 
     hint_msg = "Use Arrow Up and Down to move"
-    hint_width = sw // 2  # Make the subwin half the width of the screen
+    hint_width = sw // 2
     hint_height = 4
 
-    hint_start_y = sh - hint_height  # Position the subwin just above the bottom
-    hint_start_x = (sw - hint_width) // 2  # Center the subwin horizontally
+    hint_start_y = sh - hint_height
+    hint_start_x = (sw - hint_width) // 2
     hint_subwin = stdscr.subwin(hint_height, hint_width, hint_start_y, hint_start_x)
 
     hint_subwin.addstr(1, (hint_width - len(hint_msg)) // 2, hint_msg)
@@ -277,14 +263,14 @@ def show_welcome_screen(stdscr):
     while True:
         stdscr.clear()
 
-        hint_subwin.clear()  # Clear the subwin
+        hint_subwin.clear()
         hint_subwin.box()
         hint_subwin.addstr(0, 2, "Hint")
         hint_subwin.addstr(1, 2, "Use Arrow Up '^' and Down 'v' to move in the menu")
         hint_subwin.addstr(2, 2, "Press 'Enter' to choose an option")
 
         hint_subwin.refresh()
-        #Show logo
+
         for i, line in enumerate(logo):
             stdscr.addstr(start_y + i, start_x, line)
 
@@ -293,7 +279,6 @@ def show_welcome_screen(stdscr):
 
         draw_border(stdscr, start_x - 3, start_y - 2, border_width, border_height + 1)
 
-        # Calculate centering for menu items
         for i, item in enumerate(menu_items):
             item_width = len(item)
             menu_start_x = start_x + (border_width - item_width - 3) // 2
@@ -341,7 +326,6 @@ def ask_for_name(stdscr, score):
     for idx, line in enumerate(game_over_text, start=1):
         stdscr.addstr(y + idx, x + 2, line)
 
-        # Display the score
         score_text = f"Score: {score}"
         score_x = x + (w - len(score_text)) // 2
         stdscr.addstr(y + h + 1, score_x, score_text, curses.color_pair(1))
@@ -349,7 +333,6 @@ def ask_for_name(stdscr, score):
 
     curses.echo()
     name = ""
-    #Asks for name untill its not empty
     while not name.strip():
         stdscr.addstr(19, 35, "Enter your name: ", curses.color_pair(2))
         name = stdscr.getstr(19, 53, 20).decode("utf-8")
@@ -363,7 +346,6 @@ def game_over_screen(stdscr, score):
     GAME_OVER = True
     player_name = ask_for_name(stdscr, score)
 
-    #current game settings
     game_speed = list(game_speeds.keys())[list(game_speeds.values()).index(ENEMY_SPEED)]
     difficulty_level = list(difficulty_levels.keys())[list(difficulty_levels.values()).index(RAND_ENEMY)]
 
@@ -383,7 +365,6 @@ def show_leaderboard(stdscr, settings):
 
         max_width = 40
 
-        #Content border calculation
         for _, (name, score, game_speed, difficulty_level) in enumerate(LEADERBOARD):
             line_content_length = len(f"{name} - {score} (Speed: {game_speed}, Difficulty: {difficulty_level})")
             max_width = max(line_content_length + 20, max_width)
@@ -393,18 +374,15 @@ def show_leaderboard(stdscr, settings):
 
         draw_border(stdscr, start_x, start_y, max_width, len(LEADERBOARD) + 5)
 
-        #Border Top
 
         stdscr.addstr(start_y + 1, start_x + 1, "Leaderboard".center(max_width - 2), curses.color_pair(1))
         stdscr.addstr(start_y + 2, start_x + 1, "===========".center(max_width - 2), curses.color_pair(1))
 
-        #Entries with borders
         for index, (name, score, game_speed, difficulty_level) in enumerate(LEADERBOARD, start=1):
             line_content = f"{index}. {name} - Score: {score} (Speed: {game_speed}, Difficulty: {difficulty_level})"
             y_position = start_y + 2 + index
             stdscr.addstr(y_position, start_x + 1, line_content.ljust(max_width - 2))
 
-        #Instructions inside the border
         instruction_index = start_y + 4 + len(LEADERBOARD)
         stdscr.addstr(instruction_index, start_x + 1, "Press enter key to return to the menu".ljust(max_width - 2), curses.color_pair(2))
 
@@ -428,20 +406,16 @@ def main_game(stdscr):
     curses.init_pair(1, curses.COLOR_YELLOW, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
 
-    #Arena dimensions
     sh, sw = 30, 40
 
-    # Calculate screen center
     screen_h, screen_w = stdscr.getmaxyx()
     start_y = (screen_h - sh) // 2
     start_x = (screen_w - sw) // 2
 
-    #Player_create
     player = "<O>"
     player_x = sw // 2 - 1
     player_y = sh - 3
 
-    #Enemies_create
     enemies = []
     num_enemies = NUM_ENEMIES
 
@@ -451,7 +425,6 @@ def main_game(stdscr):
         enemy_y = 2
         enemies.append((enemy_x, enemy_y, enemy))
 
-        # Arena ascii border
         top_bottom_border = '+' + '-' * (sw - 4) + '+'
         side_border = '|' + ' ' * (sw - 4) + '|'
         ascii_art = [' ' * (sw - 2), top_bottom_border] + [side_border] * (sh - 4) + [top_bottom_border]
@@ -465,19 +438,17 @@ def main_game(stdscr):
         for i, line in enumerate(ascii_art):
             win.addstr(i, 1, line)
 
-        #Move player
         action = stdscr.getch()
         if action == curses.KEY_LEFT and player_x > 2:
             player_x -= 1
         elif action == curses.KEY_RIGHT and player_x < sw - 5:
             player_x += 1
 
-        #Move enemies
         new_enemies = []
         for enemy_x, enemy_y, enemy in enemies:
             enemy_y += 1
 
-            #Collisions
+
             if enemy_y == sh - 2:
                 if enemy_x >= player_x and enemy_x <= player_x:
                     GAME_OVER = True
@@ -485,7 +456,6 @@ def main_game(stdscr):
             else:
                 new_enemies.append((enemy_x, enemy_y, enemy))
 
-        #Spawn enemies
         if random.randint(1, RAND_ENEMY) > 4:
             new_enemy = 'v'
             new_enemy_x = random.randint(2, sw - 3)
@@ -494,11 +464,9 @@ def main_game(stdscr):
 
         enemies = new_enemies
 
-        # Is game over
         if any((enemy_x >= player_x and enemy_x <= player_x + 2 and player_y == enemy_y) for enemy_x, enemy_y, _ in enemies):
             GAME_OVER = True
 
-        # Draw player
         win.attron(curses.color_pair(1))
         win.addstr(player_y, player_x, player)
         win.attroff(curses.color_pair(1))
@@ -510,7 +478,7 @@ def main_game(stdscr):
             if enemy_y == player_y:
                 score = increase_score(score)
 
-        win.addstr(0, 2, f'Score: {score}')
+        win.addstr(0, 15, f'Score: {score}', curses.color_pair(1))
 
         win.refresh()
         time.sleep(ENEMY_SPEED)
@@ -530,8 +498,6 @@ def main(stdscr, settings=game_speeds):
 
     while True:
         choice = show_welcome_screen(stdscr)
-
-
 
         if choice == 0:
             stdscr.clear()
@@ -561,7 +527,6 @@ def main(stdscr, settings=game_speeds):
             save_settings()
             stdscr.refresh()
             break
-
 
 
 
