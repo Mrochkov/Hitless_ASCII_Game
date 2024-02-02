@@ -563,11 +563,5 @@ def main(stdscr, settings=game_speeds):
             stdscr.refresh()
             break
 
-
-
-
-
-
-
 if __name__ == "__main__":
     curses.wrapper(main)
